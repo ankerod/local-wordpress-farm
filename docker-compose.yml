@@ -1,0 +1,71 @@
+services:
+# Database (MySQL) services
+  db-wordpress-site-1:
+    image: mysql:8.0
+    environment: # Defined in .env
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD1}
+      MYSQL_DATABASE: ${MYSQL_DATABASE1}
+      MYSQL_USER: ${MYSQL_USER1}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD1}
+    ports:
+      - 3306:3306
+    volumes:
+      - db_data_site-1:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "${MYSQL_USER1}", "-p${MYSQL_PASSWORD1}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
+
+  db-wordpress-site-2:
+    image: mysql:8.0
+    environment: # Defined in .env
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD2}
+      MYSQL_DATABASE: ${MYSQL_DATABASE2}
+      MYSQL_USER: ${MYSQL_USER2}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD2}
+    ports:
+      - 3308:3308
+    volumes:
+      - db_data_site-2:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "${MYSQL_USER2}", "-p${MYSQL_PASSWORD2}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
+
+# Wordpress services
+  wordpress-site-1:
+    image: wordpress:6.8.1-apache
+    ports:
+      - 8080:80
+    depends_on:
+      - db-wordpress-site-1
+    environment: # Defined in .env
+      WORDPRESS_DB_HOST: ${WORDPRESS_DB_HOST1}
+      WORDPRESS_DB_USER: ${WORDPRESS_DB_USER1}
+      WORDPRESS_DB_PASSWORD: ${WORDPRESS_DB_PASSWORD1}
+      WORDPRESS_DB_NAME: ${WORDPRESS_DB_NAME1}
+    volumes:
+      - ./wordpress-site-1:/var/www/html
+    
+  wordpress-site-2:
+    image: wordpress:6.8.1-apache
+    ports:
+      - 8090:80
+    depends_on:
+      - db-wordpress-site-2
+    environment: # Defined in .env
+      WORDPRESS_DB_HOST: ${WORDPRESS_DB_HOST2}
+      WORDPRESS_DB_USER: ${WORDPRESS_DB_USER2}
+      WORDPRESS_DB_PASSWORD: ${WORDPRESS_DB_PASSWORD2}
+      WORDPRESS_DB_NAME: ${WORDPRESS_DB_NAME2}
+    volumes:
+      - ./wordpress-site-2:/var/www/html
+    
+
+volumes:
+  db_data_site-1:
+  db_data_site-2:
